@@ -23,71 +23,6 @@
 #include <conio.h>
 #include <unistd.h>  // For sleep functions
 
-// SID register addresses
-#define SID_V1_FREQ_LO  0xD400
-#define SID_V1_FREQ_HI  0xD401
-#define SID_V1_CTRL     0xD404
-#define SID_V1_AD       0xD405
-#define SID_V1_SR       0xD406
-#define SID_VOL_FILT    0xD418
-
-// Note frequency table (PAL C64 tuning, approx)
-const unsigned int NOTE_TABLE[] = {
-    0,  // Placeholder for no note
-    170, 181, 192, 204, 216, 229, 243, 258, 273, 289, 306, 324,  // C3 - B3
-    343, 363, 385, 408, 432, 458, 485, 514, 544, 577, 611, 647,  // C4 - B4
-    685, 725, 767, 812, 858, 907, 958, 1012, 1068, 1127, 1189, 1254  // C5 - B5
-};
-
-// Melody from Megalovania (simplified)
-const unsigned char MELODY[] = {
-    26, 26, 38, 35, 34, 33, 31, 26, 31, 33, 
-    26, 26, 38, 35, 34, 33, 31, 26, 31, 33, 
-    26, 26, 38, 35, 34, 33, 31, 33, 31, 26, 
-    23, 22, 26, 31, 33, 26, 31, 33, 255  // 255 = end
-};
-
-// Duration table (adjust to match rhythm)
-const unsigned char DURATIONS[] = {4, 4, 8, 4, 4, 4, 4, 4, 4, 4,
-                                   4, 4, 8, 4, 4, 4, 4, 4, 4, 4,
-                                   4, 4, 8, 4, 4, 4, 4, 4, 4, 4,
-                                   4, 4, 4, 4, 4, 4, 4, 4};
-
-// Basic software delay (adjust this for real timing)
-void delay(unsigned int d) {
-    while (d--) {
-        asm volatile("nop");
-    }
-}
-
-// Function to play a note on SID
-void play_note(unsigned char note_index, unsigned char duration) {
-    unsigned int freq;  // Declare all variables first
-
-    if (note_index == 255) {
-        return;  // End of melody
-    }
-
-    freq = NOTE_TABLE[note_index];  // Get frequency from table
-
-    *(unsigned char*)SID_V1_FREQ_LO = freq & 0xFF;  // Low byte
-    *(unsigned char*)SID_V1_FREQ_HI = (freq >> 8) & 0xFF; // High byte
-
-    *(unsigned char*)SID_V1_CTRL = 0x11; // Enable square wave + gate
-    delay(duration * 10);  // Delay (approximate timing)
-    
-    *(unsigned char*)SID_V1_CTRL = 0x10; // Disable gate (release note)
-    SID_FREQ(v1, duration);
-    SID_START(v1, SID_SQUARE)
-}
-
-
-// Function to set up the SID chip
-void sid_init() {
-    *(unsigned char*)SID_VOL_FILT = 0x0F;  // Set master volume to max
-    *(unsigned char*)SID_V1_AD = 0x08;  // Attack=0, Decay=8
-    *(unsigned char*)SID_V1_SR = 0x50;  // Sustain=5, Release=0
-}
 
 #define LOCHAR 32
 #define HICHAR 127
@@ -229,7 +164,6 @@ void set_row_color_rand() {
 }
 
 void main(void) {
-  unsigned char i;  // Declare loop variable at start
   
   // clear the screen to 0 (not ' ' space)
   memset((byte*)SCREEN, 0, 0x400);
@@ -266,13 +200,6 @@ void main(void) {
     waitvsync();
     scroll_one_pixel_left();
     set_row_color_rand();
-    sid_init();  // Initialize SID
-    i = 0;
-    play_note(MELODY[i], DURATIONS[i]);
-    i++;
-    if (MELODY[i] == 255) {
-      i = 0;
-    }
 
   }
   
