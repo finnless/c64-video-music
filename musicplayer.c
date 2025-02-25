@@ -121,34 +121,6 @@ const Param SID_PARAMS[NPARAMS] = {
 int paramValues[NPARAMS];
 int currentParam;
 
-void drawValue(char i) {
-  char buf[16];
-  gotoxy(19, i+2);
-  cputs(i == currentParam ? ">" : " ");
-  gotoxy(20, i+2);
-  cclear(8);
-  gotoxy(20, i+2);
-  itoa(paramValues[i], buf, 16);
-  cputs(buf);
-  if (SID_PARAMS[i].high < 16) {
-    cputc(' ');
-    chline(paramValues[i]);
-    cclear(16 - paramValues[i]);
-  }
-}
-
-void drawParams() {
-  char i;
-  clrscr();
-  cputsxy(0, 0, "SID Parameters:");
-  for (i = 0; i < NPARAMS; ++i) {
-    const Param* param = &SID_PARAMS[i];
-    gotoxy(1, i+2);
-    puts(param->name);
-    drawValue(i);
-  }
-}
-
 void setSIDRegisters() {
   char i;
   word val;
@@ -187,49 +159,6 @@ char music_update() {
   return IRQ_NOT_HANDLED;
 }
 
-void handleInput() {
-  char key = 0;
-  char joy = joy_read(1);
-  if (joy == 0) return;
-  if (JOY_UP(joy)) key = 'i';
-  if (JOY_DOWN(joy)) key = 'k';
-  if (JOY_LEFT(joy)) key = 'j';
-  if (JOY_RIGHT(joy)) key = 'l';
-  switch (key) {
-    case 'i': // UP
-      if (currentParam > 0) {
-        --currentParam;
-        drawValue(currentParam+1);
-        drawValue(currentParam);
-      }
-      break;
-    case 'k': // DOWN
-      if (currentParam < NPARAMS - 1) {
-        ++currentParam;
-        drawValue(currentParam-1);
-        drawValue(currentParam);
-      }
-      break;
-    case 'j': // LEFT
-      if (paramValues[currentParam] > SID_PARAMS[currentParam].low) {
-        paramValues[currentParam]--;
-        drawValue(currentParam);
-        setSIDRegisters();
-      }
-      break;
-    case 'l': // RIGHT
-      if (paramValues[currentParam] < SID_PARAMS[currentParam].high) {
-        paramValues[currentParam]++;
-        drawValue(currentParam);
-        setSIDRegisters();
-      }
-      break;
-  }
-  // delay a few frames to slow down movement
-  waitvsync();
-  waitvsync();
-  waitvsync();
-}
 
 void main(void)
 {
@@ -244,28 +173,23 @@ void main(void)
   paramValues[5] = 4;
   paramValues[7] = 1; // pulse
   setSIDRegisters();
-
-  // draw the UI
-  drawParams();
   
   // set IRQ routine called every frame
   set_irq(music_update, (void*)0x9f00, 0x100);
   
-  // main loop to handle UI
+  // main loop
   music_ptr = 0;
   while (1) {
-    waitvsync();
-    handleInput();
   }
 }
 
 //
-// MUSIC DATA -- "The Easy Winners" by Scott Joplin
+// MUSIC DATA
 //
 const byte music1[] = {
 0x0f, 0x03, 0x8a, 0x0f, 0x03, 0x85, 0x1b, 0x85, 0x03, 0x85, 0x1b, 0x85, 0x19, 0x03, 0x85, 0x1b,
-x04, 0x0e, 0x85, 0x10, 0x04, 0xa4, 0xff,
+0x85, 0x0f, 0x03, 0x8a, 0x0f, 0x03, 0x85, 0x1b, 0x85, 0x03, 0x85, 0x1b, 0x85, 0x19, 0x03, 0x85,
+0x1b, 0x85, 0x0f, 0x03, 0x8a, 0x0f, 0x03, 0x85, 0x1b, 0x85, 0x03, 0x85, 0x1b, 0x85, 0x19, 0x03, 0xff,
 };
 
 #endif
-
