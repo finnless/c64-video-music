@@ -20,7 +20,6 @@
 // 16 x 32 MSB first y offset 6 Terminus
 
 #include <cbm.h>
-#include <conio.h>
 #include <unistd.h>  // For sleep functions
 
 
@@ -295,10 +294,6 @@ void scroll_one_pixel_left() {
 
 void set_row_color(byte line, byte color) {
   memset((byte*)COLOR_RAM+line*40, color, 40);
-}
-  
-int get_random(int min, int max) {
-    return (rand() % (max - min + 1)) + min;
 }
   
 void set_row_color_rand() {
