@@ -293,13 +293,6 @@ void scroll_one_pixel_left() {
   scroll_x++;
 }
 
-void display_list() {
-  VIC.bgcolor[0] = COLOR_BLACK;
-  DLIST_NEXT(BOTTOM_Y);  
-  VIC.bgcolor[0] = COLOR_GRAY1;
-  DLIST_RESTART(TOP_Y);
-}
-
 void set_row_color(byte line, byte color) {
   memset((byte*)COLOR_RAM+line*40, color, 40);
 }
@@ -346,9 +339,6 @@ void main(void)
   SET_VIC_BITMAP(BITMAP);
   // set 38 column mode (for X scrolling)
   VIC.ctrl2 = 0b00000000;
-  // setup IRQs to change colors
-  // TODO: This breaks music
-  // DLIST_SETUP(display_list);
   
   
   
