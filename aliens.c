@@ -317,7 +317,8 @@ void set_row_color_rand() {
   
 }
 
-void main(void) {
+void main(void)
+{
   
   // clear the screen to 0 (not ' ' space)
   memset((byte*)SCREEN, 0, 0x400);
@@ -341,16 +342,18 @@ void main(void) {
   set_row_color(SCROLL_TOP+14, COLOR_PURPLE);
   set_row_color(SCROLL_TOP+15, COLOR_PURPLE);
   
-  
-  
   // set new address for character bitmaps
   SET_VIC_BITMAP(BITMAP);
   // set 38 column mode (for X scrolling)
   VIC.ctrl2 = 0b00000000;
   // setup IRQs to change colors
-  DLIST_SETUP(display_list);
-
-  // MUSIC STUFF
+  // TODO: This breaks music
+  // DLIST_SETUP(display_list);
+  
+  
+  
+  // MUSIC BEGIN
+  
   // set initial SID parameters
   paramValues[0] = 15;
   paramValues[1] = 8;
@@ -363,17 +366,17 @@ void main(void) {
   
   // set IRQ routine called every frame
   set_irq(music_update, (void*)0x9f00, 0x100);
+  
+  // main loop to handle UI
   music_ptr = 0;
-  // END MUSIC STUFF
-
-  // infinite loop
   while (1) {
     waitvsync();
     scroll_one_pixel_left();
     set_row_color_rand();
-
+    
   }
   
+  // MUSIC END
 }
 
 
