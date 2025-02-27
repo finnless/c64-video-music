@@ -162,8 +162,6 @@ char music_update() {
 
 void main(void)
 {
-  joy_install (joy_static_stddrv);
-  
   // set initial SID parameters
   paramValues[0] = 15;
   paramValues[1] = 8;
